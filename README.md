@@ -188,3 +188,4 @@ and `lang/` assets it needs.
 - [Silenci0 — SMAC fork](https://github.com/Silenci0/SMAC)
 - [roflmuffin — CounterStrikeSharp](https://github.com/roflmuffin/CounterStrikeSharp)
 - [KillStr3aK — CS2-AntiDLL](https://github.com/KillStr3aK/CS2-AntiDLL) (AntiDLL module basis)
+- [KillerBigPoint — TBAntiCheat](https://github.com/killerbigpoint/cs2-anticheat) (Plugin base code)
