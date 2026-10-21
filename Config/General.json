@@ -1,0 +1,10 @@
+{
+  "Enabled": true,
+  "Debug": false,
+  "CommandPermission": "@css/root",
+  "BanCommand": "css_ban #{id} 0 \"ANTICHEAT: {reason}\"",
+  "KickCommand": "css_kick #{id}",
+  "DiscordAlerts": true,
+  "DiscordWebhookUrl": "",
+  "DiscordMentionRoleId": ""
+}

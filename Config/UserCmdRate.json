@@ -1,0 +1,7 @@
+{
+  "DetectionEnabled": true,
+  "DetectionAction": 2,
+  "MaxCommandsPerTick": 2.0,
+  "WindowTicks": 64,
+  "MaxDetectionsBeforeAction": 3
+}

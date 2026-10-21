@@ -1,0 +1,6 @@
+{
+  "DetectionEnabled": true,
+  "DetectionAction": 2,
+  "MaxYawDeltaPerTick": 120,
+  "MaxDetectionsBeforeAction": 6
+}

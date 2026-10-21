@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CounterStrikeSharp.API" Version="1.0.375" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- AntiDLL native signatures/offsets. Ships into the plugin's gamedata folder and is loaded by
+         GameData.GetSignature/GetOffset. Edit this JSON to update signatures (no recompile). -->
+    <None Update="gamedata\CS2-AntiCheat.AntiDLL.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Config\" />
+  </ItemGroup>
+
+</Project>

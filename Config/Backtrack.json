@@ -1,0 +1,6 @@
+{
+  "DetectionEnabled": true,
+  "DetectionAction": 1,
+  "PingThresholdMs": 150,
+  "SuspiciousKillsBeforeLog": 4
+}

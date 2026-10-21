@@ -1,0 +1,6 @@
+{
+  "DetectionEnabled": true,
+  "DetectionAction": 2,
+  "MaxToggles": 10,
+  "WindowTicks": 64
+}

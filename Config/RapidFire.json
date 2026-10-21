@@ -1,0 +1,5 @@
+{
+  "DetectionEnabled": true,
+  "DetectionAction": 2,
+  "MaxDetectionsBeforeAction": 5
+}

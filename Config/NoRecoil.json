@@ -1,0 +1,8 @@
+{
+  "DetectionEnabled": true,
+  "DetectionAction": 3,
+  "MinBurstShots": 12,
+  "MinAccumulatedPunch": 4.0,
+  "MaxPitchCompensation": 1.0,
+  "MaxDetectionsBeforeAction": 2
+}

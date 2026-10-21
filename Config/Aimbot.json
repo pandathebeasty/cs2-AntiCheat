@@ -1,0 +1,6 @@
+{
+  "DetectionEnabled": true,
+  "DetectionAction": 2,
+  "MaxAimbotAngle": 30,
+  "MaxDetectionsBeforeAction": 2
+}

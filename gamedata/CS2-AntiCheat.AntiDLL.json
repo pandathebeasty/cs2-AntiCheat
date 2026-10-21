@@ -1,0 +1,32 @@
+{
+    "CSource1LegacyGameEventGameSystem::ListenBitsReceived": {
+        "_search": "OnSource1LegacyGameEventListenBitsReceived: game event %i not found.",
+        "signatures": {
+            "library": "server",
+            "windows": "40 56 48 83 EC ? 48 63 42",
+            "linux": "48 63 46 58 83 F8 3F 0F 87 ? ? ? ? 55 48 C1 E0 04 48 89 E5 41 56 41 55"
+        }
+    },
+    "CLCMsg_ListenEvents::EventCount": {
+        "_comment": "Offset of the int element-count of the listen-bits event array inside CLCMsg_ListenEvents. Windows: start of the CUtlVector<uint32> (count at +0x0 of the vector at 0x48 -> 0x48). Linux: separate count field at 0x48. Both verified from ListenBitsReceived.",
+        "offsets": {
+            "windows": 72,
+            "linux": 72
+        }
+    },
+    "CLCMsg_ListenEvents::EventData": {
+        "_comment": "Offset of the pointer to the uint32 word array holding the listen bits. Windows: the CUtlVector's data pointer sits at vector+0x8 (0x48+0x8 = 0x50). Linux: a direct pointer field at 0x50. Both verified from ListenBitsReceived (Windows reads CUtlVector@0x48; Linux reads count@0x48 + ptr@0x50).",
+        "offsets": {
+            "windows": 80,
+            "linux": 80
+        }
+    },
+    "CGameEventManager::GetEventDescriptor": {
+        "_comment": "bool/ptr GetEventDescriptor(CGameEventManager* this, const char* name, int* outBitIndex). Resolves an event name to its descriptor and writes the event's listen-bit index into *outBitIndex (Windows ORs bit 31 as a flag; mask with 0x7FFFFFFF). Used at init to translate blacklisted event names into bit indices. Windows verified from server.dll, Linux from libserver.so (sub_17705A0).",
+        "signatures": {
+            "library": "server",
+            "windows": "48 89 5C 24 08 48 89 6C 24 18 56 57 41 56 48 83 EC 20 49 8B F8 48 8B F2 48 8B D9",
+            "linux": "55 48 8D 87 E0 00 00 00 48 89 E5 41 57 41 56 49 89 FE 41 55 41 54 53 48 81 EC D8 03 00 00"
+        }
+    }
+}
