@@ -12,12 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- AntiDLL native signatures/offsets. Ships into the plugin's gamedata folder and is loaded by
-         GameData.GetSignature/GetOffset. Edit this JSON to update signatures (no recompile). -->
-    <None Update="gamedata\CS2-AntiCheat.AntiDLL.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="Config\" />
   </ItemGroup>
 
