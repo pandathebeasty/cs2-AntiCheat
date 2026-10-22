@@ -44,16 +44,14 @@ jobs:
       - name: Package Plugin
         run: |
           mkdir -p ${{ env.OUTPUT_PATH }}/plugins/${{ env.PROJECT_NAME }}
-
+      
           cp -r ${{ env.TMP_PATH }}/* \
             ${{ env.OUTPUT_PATH }}/plugins/${{ env.PROJECT_NAME }}/
-
-          for folder in gamedata; do
-            if [ -d "$folder" ]; then
-              cp -r "$folder" \
-                ${{ env.OUTPUT_PATH }}/plugins/${{ env.PROJECT_NAME }}/
-            fi
-          done
+      
+          if [ -d "gamedata" ]; then
+            cp -r gamedata \
+              ${{ env.OUTPUT_PATH }}/
+          fi
 
       - name: Create ZIP
         run: |
