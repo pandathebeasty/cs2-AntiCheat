@@ -28,8 +28,8 @@ jobs:
       - name: Get Plugin Version
         id: version
         run: |
-          VERSION=$(grep -R "ModuleVersion =>" . | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          VERSION=$(grep "ModuleVersion =>" Core/ACCore.cs | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUTT
 
       - name: Restore
         run: dotnet restore ${{ env.PROJECT_PATH }}
