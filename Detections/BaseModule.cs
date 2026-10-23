@@ -1,6 +1,5 @@
 using CounterStrikeSharp.API.Core;
 using CS2AntiCheat.Core;
-using System.Collections.Generic;
 
 namespace CS2AntiCheat.Detections
 {
@@ -14,8 +13,6 @@ namespace CS2AntiCheat.Detections
 
     internal abstract class BaseModule
     {
-        private readonly HashSet<string> _detectedPlayers = new();
-
         internal BaseModule() { }
 
         internal abstract string Name { get; }
@@ -23,11 +20,6 @@ namespace CS2AntiCheat.Detections
 
         protected void OnPlayerDetected(PlayerData player, string reason)
         {
-            if (!_detectedPlayers.Add(player.SteamID))
-            {
-                return;
-            }
-
             DetectionMetadata metadata = new()
             {
                 module = this,
@@ -39,14 +31,11 @@ namespace CS2AntiCheat.Detections
             DetectionHandler.OnPlayerDetected(metadata);
         }
 
-        internal virtual void OnPlayerJoin(PlayerData player)
-        {
-            _detectedPlayers.Remove(player.SteamID);
-        }
-
-        internal virtual void OnPlayerLeave(PlayerData player)
-        {
-            _detectedPlayers.Remove(player.SteamID);
+        internal virtual void OnPlayerJoin(PlayerData player) { }
+        
+        internal virtual void OnPlayerLeave(PlayerData player) 
+        { 
+            DetectionHandler.OnPlayerLeave(player);
         }
 
         internal virtual void OnPlayerJump(PlayerData player) { }
@@ -60,9 +49,6 @@ namespace CS2AntiCheat.Detections
 
         internal virtual void OnGameTick() { }
 
-        internal virtual void OnUnload()
-        {
-            _detectedPlayers.Clear();
-        }
+        internal virtual void OnUnload() { }
     }
 }

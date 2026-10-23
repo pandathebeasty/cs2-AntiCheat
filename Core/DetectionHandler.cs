@@ -15,8 +15,15 @@ namespace CS2AntiCheat.Core
 
     internal static class DetectionHandler
     {
+        private static readonly HashSet<string> ProcessedPlayers = new();
+
         internal static void OnPlayerDetected(DetectionMetadata metadata)
         {
+            if (!ProcessedPlayers.Add(metadata.player.SteamID))
+            {
+                return;
+            }
+            
             string punishment;
 
             switch (metadata.module.ActionType)
@@ -25,7 +32,7 @@ namespace CS2AntiCheat.Core
                 {
                     return;
                 }
-                
+
                 case ActionType.Log:
                 {
                     Globals.Log($"{metadata.player.Controller.PlayerName} is suspected of using {metadata.module.Name} ({metadata.reason})");
@@ -55,33 +62,32 @@ namespace CS2AntiCheat.Core
                 }
             }
 
-            // Discord notification, gated by the global DiscordAlerts switch (General.json).
-            if (GeneralConfig.GetGeneralConfig().Config.DiscordAlerts == true)
+            if (GeneralConfig.GetGeneralConfig().Config.DiscordAlerts)
             {
                 NotifyDiscord(metadata, punishment);
             }
         }
 
-        /// <summary>
-        /// Runs the configurable ban + kick commands (in that order) on the server console. Both
-        /// come from General.json and support placeholders; an empty template skips that step.
-        /// </summary>
+        internal static void OnPlayerLeave(PlayerData player)
+        {
+            ProcessedPlayers.Remove(player.SteamID);
+        }
+
         private static void BanPlayerWithCommands(DetectionMetadata metadata)
         {
             var cfg = GeneralConfig.GetGeneralConfig().Config;
             var banCommand = BuildCommand(cfg.BanCommand, metadata);
             var kickCommand = BuildCommand(cfg.KickCommand, metadata);
 
-            // Execute on the main thread/next frame (detections can fire off the main thread).
             Server.NextFrame(() =>
             {
-                if (string.IsNullOrWhiteSpace(banCommand) == false)
+                if (!string.IsNullOrWhiteSpace(banCommand))
                 {
                     Globals.Log($"Executing ban command: {banCommand}");
                     Server.ExecuteCommand(banCommand);
                 }
 
-                if (string.IsNullOrWhiteSpace(kickCommand) == false)
+                if (!string.IsNullOrWhiteSpace(kickCommand))
                 {
                     Globals.Log($"Executing kick command: {kickCommand}");
                     Server.ExecuteCommand(kickCommand);
@@ -89,7 +95,6 @@ namespace CS2AntiCheat.Core
             });
         }
 
-        /// <summary>Fills the configurable command template with this detection's player data.</summary>
         private static string BuildCommand(string template, DetectionMetadata metadata)
         {
             if (string.IsNullOrWhiteSpace(template))
