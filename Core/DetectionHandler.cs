@@ -25,7 +25,7 @@ namespace CS2AntiCheat.Core
                 {
                     return;
                 }
-
+                
                 case ActionType.Log:
                 {
                     Globals.Log($"{metadata.player.Controller.PlayerName} is suspected of using {metadata.module.Name} ({metadata.reason})");
