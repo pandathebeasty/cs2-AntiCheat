@@ -43,7 +43,18 @@ namespace CS2AntiCheat.Core
                 case ActionType.Kick:
                 {
                     Globals.Log($"{metadata.player.Controller.PlayerName} was kicked for using {metadata.module.Name} ({metadata.reason})");
-                    metadata.player.Disconnect(NetworkDisconnectionReason.NETWORK_DISCONNECT_DISCONNECT_BY_SERVER);
+                    
+                    var cfg = GeneralConfig.GetGeneralConfig().Config;
+                    var kickCommand = BuildCommand(cfg.KickCommand, metadata);
+                    Server.NextFrame(() =>
+                    {
+                        if (!string.IsNullOrWhiteSpace(kickCommand))
+                        {
+                            Globals.Log($"Executing kick command: {kickCommand}");
+                            Server.ExecuteCommand(kickCommand);
+                        }
+                    });
+
                     punishment = "Player was kicked.";
                     break;
                 }
@@ -61,7 +72,7 @@ namespace CS2AntiCheat.Core
                     return;
                 }
             }
-
+            
             if (GeneralConfig.GetGeneralConfig().Config.DiscordAlerts)
             {
                 NotifyDiscord(metadata, punishment);
@@ -86,7 +97,7 @@ namespace CS2AntiCheat.Core
                     Globals.Log($"Executing ban command: {banCommand}");
                     Server.ExecuteCommand(banCommand);
                 }
-
+                
                 if (!string.IsNullOrWhiteSpace(kickCommand))
                 {
                     Globals.Log($"Executing kick command: {kickCommand}");

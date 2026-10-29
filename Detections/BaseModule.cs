@@ -48,7 +48,7 @@ namespace CS2AntiCheat.Detections
         internal virtual void OnRoundEnd() { }
 
         internal virtual void OnGameTick() { }
-
+        
         internal virtual void OnUnload() { }
     }
 }

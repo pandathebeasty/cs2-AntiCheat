@@ -80,7 +80,7 @@ namespace CS2AntiCheat.Handlers
         private static HookResult OnPlayerDisconnect(EventPlayerDisconnect disconnectEvent, GameEventInfo _)
         {
             OnPlayerLeft(disconnectEvent.Userid);
-
+            
             return HookResult.Continue;
         }
 
