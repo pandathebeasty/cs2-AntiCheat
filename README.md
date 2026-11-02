@@ -25,6 +25,10 @@ can be mirrored to Discord and to the CounterStrikeSharp log file.
 | **DuckSpam**      | Crouch-spam (duck toggling) beyond human rates                           | `DuckSpam.json`              |
 | **UserCmdRate**   | Abnormal user-command rates (command injection / timing cheats)          | `UserCmdRate.json`           |
 | **NoRecoil**      | Recoil compensation that no human input could achieve                    | `NoRecoil.json`              |
+| **Spinbot**       | Sustained, inhuman yaw rotation over many consecutive ticks              | `Spinbot.json`               |
+| **Triggerbot** ⚠️ | A run of kills with a near-perfect aim-to-target angle                   | `Triggerbot.json`            |
+| **FakeLag** ⚠️    | Choke bursts: ticks with no command, then a sudden dump (fake-lag)       | `FakeLag.json`               |
+| **AntiFlash** ⚠️  | A run of kills landed while the shooter is heavily flashed (no-flash)    | `AntiFlash.json`             |
 | **AntiDLL**       | Cheat DLLs that subscribe to blacklisted engine game events              | `AntiDLL.json` (+ gamedata)  |
 
 All modules are enabled by default. Each writes its own `Configs/plugins/CS2-AntiCheat/<Module>.json`
@@ -59,14 +63,32 @@ signatures/offsets shipped in `gamedata/CS2-AntiCheat.AntiDLL.json`.
 | `Debug`               | `false`                                             | Verbose runtime logging to the console/log. Load milestones log regardless. |
 | `LogPrefix`           | `[CS2AC]`                                            | Prefix prepended to every console log line. Empty = no prefix.              |
 | `CommandPermission`   | `@css/root`                                          | Permission flag required to run admin commands. Server console always passes. |
-| `BanCommand`          | `css_ban #{id} 0 "ANTICHEAT: {reason}"`             | Command run (server console) when a module's action is **Ban**.             |
+| `BanCommand`          | `css_ban #{id} 0 "ANTICHEAT: {module}"`             | Command run (server console) when a module's action is **Ban**.             |
 | `KickCommand`         | `css_kick #{id}`                                    | Command run after the ban command (also used for **Kick**).                 |
+| `SkipDuringWarmupAndFreeze` | `true`                                        | Skip timing/movement checks during warmup & freeze time (fewer false positives). |
+| `MaxPingForTimingChecks` | `150`                                            | Skip timing-sensitive checks for players at/above this ping (ms). `0` = never skip. |
 | `DiscordAlerts`       | `true`                                              | Master switch for Discord detection alerts.                                 |
 | `DiscordWebhookUrl`   | `""`                                                | Discord webhook URL. Empty = Discord disabled.                              |
 | `DiscordMentionRoleId`| `""`                                                | `""` = no ping · `everyone` · `here` · a numeric role id.                   |
 
 Command placeholders: `{id}` (userid — use `#{id}` to target by userid), `{steamid}` (SteamID64),
-`{steamid2}` (STEAM_0:…), `{name}`, `{reason}`, `{module}`.
+`{steamid2}` (STEAM_0:…), `{name}`, `{module}` (module name only, e.g. `RapidFire`), `{reason}`
+(full detail, e.g. `RapidFire -> weapon_m4a1 fired faster...`).
+
+The default `BanCommand` uses `{module}` so players see only `ANTICHEAT: RapidFire`; the full
+`{reason}` detail still goes to the console log and Discord. A detected player is punished **once**,
+on the first detection — not every tick.
+
+### Accuracy gates
+
+Two global gates cut the most common false positives for timing/movement modules (they never gate
+the AntiDLL / Backtrack-style checks that need high-ping data):
+
+- **`SkipDuringWarmupAndFreeze`** — during warmup and freeze time players are frozen, respawning,
+  swapping weapons in buy time, or replaced by bots, all of which can look like a cheat to a
+  timing-based module. On by default.
+- **`MaxPingForTimingChecks`** — high latency makes subtick timing and per-tick angle deltas
+  unreliable; above this ping, the timing-sensitive modules skip the player. `0` disables the gate.
 
 ### Per-module (`Configs/plugins/CS2-AntiCheat/<Module>.json`)
 
@@ -112,6 +134,10 @@ passes**.
 | `tbac_duckspam_action`       | `0‑3`             | Set the DuckSpam module's action.                             |
 | `tbac_usercmdrate_action`    | `0‑3`             | Set the UserCmdRate module's action.                          |
 | `tbac_norecoil_action`       | `0‑3`             | Set the NoRecoil module's action.                             |
+| `tbac_spinbot_action`        | `0‑3`             | Set the Spinbot module's action.                              |
+| `tbac_triggerbot_action`     | `0‑3`             | Set the Triggerbot module's action.                           |
+| `tbac_fakelag_action`        | `0‑3`             | Set the FakeLag module's action.                              |
+| `tbac_antiflash_action`      | `0‑3`             | Set the AntiFlash module's action.                            |
 | `tbac_antidll_action`        | `0‑3`             | Set the AntiDLL module's action.                              |
 
 Action values: `0` = none · `1` = log · `2` = kick · `3` = ban. `*_action` commands write the new
@@ -125,7 +151,7 @@ Load milestones are **always** written to `addons/counterstrikesharp/logs/` (ind
 
 ```
 [CS2AC] Loaded CS2-AntiCheat v1.0.0
-[CS2AC] Initialized 10 detection module(s): Aimbot, Backtrack, BunnyHop, RapidFire, UntrustedAngles, ImpossibleYaw, DuckSpam, UserCmdRate, NoRecoil, AntiDLL
+[CS2AC] Initialized 14 detection module(s): Aimbot, Backtrack, BunnyHop, RapidFire, UntrustedAngles, ImpossibleYaw, DuckSpam, UserCmdRate, NoRecoil, Spinbot, Triggerbot, FakeLag, AntiFlash, AntiDLL
 [CS2AC] AntiDLL blacklist mask built (152/160 events resolved to bits)
 ```
 
@@ -135,6 +161,26 @@ means the gamedata signatures are stale for your current CS2 version.
 
 Verbose runtime logs (per-player events, ticks, detections) are gated by `"Debug": true` in
 `General.json` so the log file stays clean in production. Change it and run `tbac_reload`.
+
+---
+
+## Calibrating heuristic modules
+
+**Spinbot, Triggerbot, FakeLag and AntiFlash** are detections that work on statistical patterns, not
+on an impossible-by-the-engine fact. A confident threshold depends on your server's tick rate, player
+skill level and network conditions, so treat them as **detectors you tune**, not plug-and-play bans:
+
+1. Keep them on `DetectionAction: 1` (Log) — Triggerbot, FakeLag and AntiFlash already default there;
+   Spinbot defaults to Kick, so drop it to Log while calibrating.
+2. Set `"Debug": true` in `General.json`, `tbac_reload`, and let the server run with real players for
+   a few days.
+3. Watch `addons/counterstrikesharp/logs/` for each module's suspicion lines. If a known-legit player
+   shows up, raise that module's thresholds (e.g. `MinConsecutiveSpinTicks`, `RequiredPerfectKills`,
+   `RequiredBursts`, `RequiredBlindKills`) until only real cheats trigger.
+4. Once the logs are clean, raise the module's `DetectionAction` to Kick (`2`) or Ban (`3`).
+
+AntiFlash has the highest false-positive risk (a skilled player can frag through a partial flash), so
+calibrate it the longest and keep its threshold conservative.
 
 ---
 
