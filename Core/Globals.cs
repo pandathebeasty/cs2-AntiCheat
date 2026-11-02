@@ -125,6 +125,8 @@ namespace CS2AntiCheat.Core
                 new NoRecoil(),
                 new Spinbot(),
                 new Triggerbot(),
+                new FakeLag(),
+                new AntiFlash(),
                 new AntiDLLModule()
             ];
 
