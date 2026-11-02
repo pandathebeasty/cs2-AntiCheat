@@ -19,6 +19,7 @@ namespace CS2AntiCheat.Handlers
         {
             Globals.Initialize(false);
             Globals.RefreshServerInfo();
+            GamePhase.Reset(); // gamerules entity is recreated each map
         }
 
         private static void OnMapEnd() { }

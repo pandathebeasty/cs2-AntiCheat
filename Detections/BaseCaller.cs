@@ -5,6 +5,31 @@ namespace CS2AntiCheat.Detections
 {
     internal static class BaseCaller
     {
+        /// <summary>
+        /// True when timing/movement detections should be skipped right now because of the round
+        /// phase (warmup / freeze time). State-management callbacks (join/leave/round) are NOT gated.
+        /// </summary>
+        private static bool PhaseGated()
+        {
+            return Globals.SkipDuringWarmupAndFreeze && GamePhase.ShouldSkipForPhase();
+        }
+
+        /// <summary>
+        /// True when timing-sensitive detections should be skipped for THIS player because their ping
+        /// is too high for reliable subtick timing / angle deltas. 0 disables the gate.
+        /// </summary>
+        private static bool PingGated(PlayerData player)
+        {
+            var max = Globals.MaxPingForTimingChecks;
+            if (max <= 0 || player.IsBot)
+            {
+                return false;
+            }
+
+            try { return player.Controller.Ping >= (uint)max; }
+            catch { return false; }
+        }
+
         internal static void OnPlayerJoin(PlayerData player)
         {
             foreach (BaseModule module in Globals.Modules)
@@ -22,6 +47,9 @@ namespace CS2AntiCheat.Detections
 
         internal static void OnPlayerLeave(PlayerData player)
         {
+            // Clear the once-per-player punishment guard so the slot can be reused by a new player.
+            DetectionHandler.OnPlayerLeave(player);
+
             foreach (BaseModule module in Globals.Modules)
             {
                 try
@@ -38,6 +66,7 @@ namespace CS2AntiCheat.Detections
         internal static void OnPlayerJump(PlayerData player)
         {
             if (!Globals.Enabled) return;
+            if (PhaseGated()) return;
             foreach (BaseModule module in Globals.Modules)
             {
                 try
@@ -54,6 +83,7 @@ namespace CS2AntiCheat.Detections
         internal static void OnPlayerHurt(PlayerData victim, PlayerData shooter, HitGroup_t hitgroup)
         {
             if (!Globals.Enabled) return;
+            if (PhaseGated()) return;
             foreach (BaseModule module in Globals.Modules)
             {
                 try
@@ -86,6 +116,7 @@ namespace CS2AntiCheat.Detections
         internal static void OnPlayerShoot(PlayerData player)
         {
             if (!Globals.Enabled) return;
+            if (PhaseGated() || PingGated(player)) return;
             foreach (BaseModule module in Globals.Modules)
             {
                 try
@@ -102,6 +133,7 @@ namespace CS2AntiCheat.Detections
         internal static void OnPlayerTick(PlayerData player)
         {
             if (!Globals.Enabled) return;
+            if (PhaseGated() || PingGated(player)) return;
             foreach (BaseModule module in Globals.Modules)
             {
                 try

@@ -15,11 +15,18 @@ namespace CS2AntiCheat.Core
 
     internal static class DetectionHandler
     {
-        private static readonly HashSet<string> ProcessedPlayers = new();
+        // Guard so a player is punished ONCE, on the first detection - not every tick. Keyed by the
+        // controller SLOT (stable for the whole session and always valid), unlike SteamID which can
+        // be "Invalid SteamID" before the client is authorized and would let a second detection
+        // through once the real SteamID resolves.
+        private static readonly HashSet<int> ProcessedSlots = new();
 
         internal static void OnPlayerDetected(DetectionMetadata metadata)
         {
-            if (!ProcessedPlayers.Add(metadata.player.SteamID))
+            var slot = metadata.player.Controller.Slot;
+
+            // First detection for this player wins; every later tick/detection is ignored.
+            if (!ProcessedSlots.Add(slot))
             {
                 return;
             }
@@ -81,7 +88,7 @@ namespace CS2AntiCheat.Core
 
         internal static void OnPlayerLeave(PlayerData player)
         {
-            ProcessedPlayers.Remove(player.SteamID);
+            ProcessedSlots.Remove(player.Controller.Slot);
         }
 
         private static void BanPlayerWithCommands(DetectionMetadata metadata)

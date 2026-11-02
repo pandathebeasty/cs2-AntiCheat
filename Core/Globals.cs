@@ -57,6 +57,10 @@ namespace CS2AntiCheat.Core
         // nothing prints before we know the setting.
         internal static bool DebugLogging = false;
 
+        // Accuracy gates, mirrored from General.json so the per-tick hot paths read them cheaply.
+        internal static bool SkipDuringWarmupAndFreeze = true;
+        internal static int MaxPingForTimingChecks = 150;
+
         // Prefix prepended to every console log line. Driven by General.json "LogPrefix". Defaults to
         // "[CS2AC]" so early init lines (before the config loads) are still tagged consistently.
         internal static string LogPrefix = "[CS2AC]";
@@ -119,6 +123,8 @@ namespace CS2AntiCheat.Core
                 new DuckSpam(),
                 new UserCmdRate(),
                 new NoRecoil(),
+                new Spinbot(),
+                new Triggerbot(),
                 new AntiDLLModule()
             ];
 
