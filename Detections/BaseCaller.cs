@@ -15,19 +15,13 @@ namespace CS2AntiCheat.Detections
         }
 
         /// <summary>
-        /// True when timing-sensitive detections should be skipped for THIS player because their ping
-        /// is too high for reliable subtick timing / angle deltas. 0 disables the gate.
+        /// True when timing-sensitive detections should be vetoed for THIS player because their
+        /// connection is unstable (high ping or jitter). Reliable subtick timing / angle deltas are
+        /// impossible under a bouncy connection, so acting on a detection there risks false positives.
         /// </summary>
-        private static bool PingGated(PlayerData player)
+        private static bool NetworkGated(PlayerData player)
         {
-            var max = Globals.MaxPingForTimingChecks;
-            if (max <= 0 || player.IsBot)
-            {
-                return false;
-            }
-
-            try { return player.Controller.Ping >= (uint)max; }
-            catch { return false; }
+            return NetworkSafety.IsUnstable(player);
         }
 
         internal static void OnPlayerJoin(PlayerData player)
@@ -49,6 +43,7 @@ namespace CS2AntiCheat.Detections
         {
             // Clear the once-per-player punishment guard so the slot can be reused by a new player.
             DetectionHandler.OnPlayerLeave(player);
+            NetworkSafety.Reset(player.Controller.Slot);
 
             foreach (BaseModule module in Globals.Modules)
             {
@@ -116,7 +111,7 @@ namespace CS2AntiCheat.Detections
         internal static void OnPlayerShoot(PlayerData player)
         {
             if (!Globals.Enabled) return;
-            if (PhaseGated() || PingGated(player)) return;
+            if (PhaseGated() || NetworkGated(player)) return;
             foreach (BaseModule module in Globals.Modules)
             {
                 try
@@ -133,7 +128,12 @@ namespace CS2AntiCheat.Detections
         internal static void OnPlayerTick(PlayerData player)
         {
             if (!Globals.Enabled) return;
-            if (PhaseGated() || PingGated(player)) return;
+
+            // Sample ping every tick so the NetworkSafety rolling average/jitter stay fresh. Done
+            // before the gate so samples keep flowing even while detections are vetoed.
+            NetworkSafety.Record(player);
+
+            if (PhaseGated() || NetworkGated(player)) return;
             foreach (BaseModule module in Globals.Modules)
             {
                 try

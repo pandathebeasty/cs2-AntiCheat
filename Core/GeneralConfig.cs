@@ -58,10 +58,17 @@ namespace CS2AntiCheat.Core
         // look like a cheat to a timing-based module. Strongly recommended ON.
         public bool SkipDuringWarmupAndFreeze { get; set; } = true;
 
-        // Skip timing-sensitive detections for players whose ping is at/above this value (ms). High
-        // latency makes subtick timing and angle deltas unreliable, which is a common false-positive
-        // source for rapid fire / impossible yaw / no-recoil. 0 = never skip on ping.
+        // NetworkSafety veto: skip (treat as unreliable) timing/aim detections when a player's
+        // connection is unstable. High latency or jitter makes subtick timing and per-tick angle
+        // deltas noisy, which is a major false-positive source for rapid fire / impossible yaw /
+        // no-recoil / spinbot / triggerbot. A detection raised while unstable is simply not acted on.
+
+        // Average ping (ms) at/above which the player's connection counts as unstable. 0 = ignore ping.
         public int MaxPingForTimingChecks { get; set; } = 150;
+
+        // Ping jitter (ms, mean deviation) at/above which the connection counts as unstable. Jitter
+        // catches a bouncy connection that a plain ping average would miss. 0 = ignore jitter.
+        public int MaxJitterForTimingChecks { get; set; } = 40;
     }
 
     internal static class GeneralConfig
@@ -90,6 +97,7 @@ namespace CS2AntiCheat.Core
             Globals.LogPrefix = config.Config.LogPrefix;
             Globals.SkipDuringWarmupAndFreeze = config.Config.SkipDuringWarmupAndFreeze;
             Globals.MaxPingForTimingChecks = config.Config.MaxPingForTimingChecks;
+            Globals.MaxJitterForTimingChecks = config.Config.MaxJitterForTimingChecks;
 
             Globals.Log($"Loaded general config (anti-cheat {(Globals.Enabled ? "ENABLED" : "DISABLED")})");
         }

@@ -10,7 +10,7 @@ namespace CS2AntiCheat.Core
     public class ACCore : BasePlugin
     {
         public override string ModuleName => "CS2-AntiCheat";
-        public override string ModuleVersion => "1.0.3";
+        public override string ModuleVersion => "1.0.4";
         public override string ModuleAuthor => "panda";
         public override string ModuleDescription => "Anti-Cheat for CS2";
 

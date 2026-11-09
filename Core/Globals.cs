@@ -60,6 +60,7 @@ namespace CS2AntiCheat.Core
         // Accuracy gates, mirrored from General.json so the per-tick hot paths read them cheaply.
         internal static bool SkipDuringWarmupAndFreeze = true;
         internal static int MaxPingForTimingChecks = 150;
+        internal static int MaxJitterForTimingChecks = 40;
 
         // Prefix prepended to every console log line. Driven by General.json "LogPrefix". Defaults to
         // "[CS2AC]" so early init lines (before the config loads) are still tagged consistently.
@@ -127,6 +128,8 @@ namespace CS2AntiCheat.Core
                 new Triggerbot(),
                 new FakeLag(),
                 new AntiFlash(),
+                new DoubleTap(),
+                new InhumanAccuracy(),
                 new AntiDLLModule()
             ];
 
